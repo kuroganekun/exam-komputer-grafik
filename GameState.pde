@@ -1,0 +1,7 @@
+enum STATE {
+  MENU,
+  STAGE,
+  GAME,
+  RESULT,
+  GAMEOVER
+}

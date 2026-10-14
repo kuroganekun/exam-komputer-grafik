@@ -91,6 +91,9 @@ int executionTimer = 0;
 int EXECUTION_DELAY = 20;
 int currentLives = DEFAULT_LIFE;
 
+STATE currentState;
+Menu menu;
+
 // ============================================================
 // SCORE
 // ============================================================
@@ -111,14 +114,41 @@ color messageColor = TEXT_COLOR;
 
 void setup() {
 
-  size(1100, 720);
+  size(1024, 768);
 
   textFont(createFont("Arial", 16));
-  program = new ArrayList<Command>();
-  levels = new ArrayList<Level>();
-  initializeLevels();
-
+  program = new ArrayList<Command>(); // Inisialisasi command list
+  levels = new ArrayList<Level>();  // Inisialisasi Level
+  initializeLevels(); // Tambahkan level
   startLevel(0);
+  
+  //this.initialize();
+  
+}
+
+void initialize(){
+  
+  levels.add(new Level(1, 5, //id, maxCommands
+      1, 3, 1, //startX, startY, startDirection
+      6, 3, //GoalX, GoalY
+      new int[] {3, 3, 3}, // Wall X
+      new int[] {1, 2, 4}, // Wall Y
+      "Gunakan MOVE untuk mencapai bintang." //Description
+      )
+    );
+    
+  levels.add(new Level(2, 6,
+      1, 5, 3,
+      1, 1,
+      new int[] {2, 2, 4, 5},
+      new int[] {3, 4, 4, 2},
+      "Robot harus berbelok untuk mencapai target."
+      )
+    );
+    
+  menu = new MainMenu();
+  currentState = STATE.MENU;
+  menu.update();
 }
 
 // ============================================================
@@ -128,6 +158,9 @@ void setup() {
 void draw() {
 
   background(BG_COLOR);
+  //menu.render();
+  //System.out.println("Current state "+ currentState);
+  //menu.update();
 
   if (gameState == MENU) {
     drawMenu();
@@ -180,14 +213,14 @@ void drawMenu() {
     );
 
   // Start button
-  drawButton(
-    width / 2 - 120,
-    410,
-    240,
-    70,
-    "START GAME",
-    ACCENT
-    );
+  //drawButton(
+  //  width / 2 - 120,
+  //  410,
+  //  240,
+  //  70,
+  //  "START GAME",
+  //  ACCENT
+  //  );
 
   fill(MUTED_COLOR);
   textSize(14);
@@ -341,7 +374,7 @@ void drawGrid() {
     textSize(22);
 
     text(
-      "■",
+      "X",
       gridX + wall.x * cellSize + cellSize / 2,
       gridY + wall.y * cellSize + cellSize / 2
       );
@@ -468,60 +501,60 @@ void drawCommandPanel() {
   // Command buttons
   int buttonY = 505;
 
-  drawButton(
-    panelX + 25,
-    buttonY,
-    105,
-    45,
-    "MOVE",
-    ACCENT
-    );
+  //drawButton(
+  //  panelX + 25,
+  //  buttonY,
+  //  105,
+  //  45,
+  //  "MOVE",
+  //  ACCENT
+  //  );
 
-  drawButton(
-    panelX + 145,
-    buttonY,
-    105,
-    45,
-    "LEFT",
-    PURPLE
-    );
+  //drawButton(
+  //  panelX + 145,
+  //  buttonY,
+  //  105,
+  //  45,
+  //  "LEFT",
+  //  PURPLE
+  //  );
 
-  drawButton(
-    panelX + 265,
-    buttonY,
-    100,
-    45,
-    "RIGHT",
-    PURPLE
-    );
+  //drawButton(
+  //  panelX + 265,
+  //  buttonY,
+  //  100,
+  //  45,
+  //  "RIGHT",
+  //  PURPLE
+  //  );
 
   // Action buttons
-  drawButton(
-    panelX + 25,
-    565,
-    105,
-    45,
-    "RUN",
-    GREEN
-    );
+  //drawButton(
+  //  panelX + 25,
+  //  565,
+  //  105,
+  //  45,
+  //  "RUN",
+  //  GREEN
+  //  );
 
-  drawButton(
-    panelX + 145,
-    565,
-    105,
-    45,
-    "DELETE",
-    YELLOW
-    );
+  //drawButton(
+  //  panelX + 145,
+  //  565,
+  //  105,
+  //  45,
+  //  "DELETE",
+  //  YELLOW
+  //  );
 
-  drawButton(
-    panelX + 265,
-    565,
-    100,
-    45,
-    "CLEAR",
-    RED
-    );
+  //drawButton(
+  //  panelX + 265,
+  //  565,
+  //  100,
+  //  45,
+  //  "CLEAR",
+  //  RED
+  //  );
 }
 
 // ============================================================
@@ -573,59 +606,6 @@ void drawBottomInfo() {
       680
       );
   }
-}
-
-// ============================================================
-// BUTTON
-// ============================================================
-
-void drawButton(
-  int x,
-  int y,
-  int w,
-  int h,
-  String label,
-  color buttonColor
-  ) {
-
-  boolean hover =
-    mouseX >= x &&
-    mouseX <= x + w &&
-    mouseY >= y &&
-    mouseY <= y + h;
-
-  if (hover) {
-
-    fill(
-      min(red(buttonColor) + 30, 255),
-      min(green(buttonColor) + 30, 255),
-      min(blue(buttonColor) + 30, 255)
-      );
-  } else {
-
-    fill(buttonColor);
-  }
-
-  noStroke();
-
-  rect(
-    x,
-    y,
-    w,
-    h,
-    8
-    );
-
-  fill(20);
-
-  textAlign(CENTER, CENTER);
-  textSize(14);
-
-  text(
-    label,
-    x + w / 2,
-    y + h / 2
-    );
 }
 
 // ============================================================
@@ -900,7 +880,7 @@ void initializeLevels() {
     5,
     0,
 
-    1,
+    6,
     1,
 
     new int[] {
@@ -1000,147 +980,7 @@ void initializeLevels() {
 // MOUSE
 // ============================================================
 
-void mousePressed() {
 
-  // ----------------------------------------------------------
-  // MENU
-  // ----------------------------------------------------------
-
-  if (gameState == MENU) {
-
-    if (
-      mouseX >= width / 2 - 120 &&
-      mouseX <= width / 2 + 120 &&
-      mouseY >= 410 &&
-      mouseY <= 480
-      ) {
-
-      gameState = GAME;
-
-      startLevel(0);
-    }
-
-    return;
-  }
-
-  // ----------------------------------------------------------
-  // RESULT
-  // ----------------------------------------------------------
-
-  if (gameState == RESULT) {
-
-    if (
-      mouseX >= width / 2 - 120 &&
-      mouseX <= width / 2 + 120 &&
-      mouseY >= 470 &&
-      mouseY <= 540
-      ) {
-
-      score = 0;
-
-      startLevel(0);
-
-      gameState = GAME;
-    }
-
-    return;
-  }
-
-  // ----------------------------------------------------------
-  // GAME
-  // ----------------------------------------------------------
-
-  if (gameState != GAME) {
-    return;
-  }
-
-  if (running || levelComplete) {
-    return;
-  }
-
-  int panelX = 650;
-
-  // MOVE
-  if (
-    mouseX >= panelX + 25 &&
-    mouseX <= panelX + 130 &&
-    mouseY >= 505 &&
-    mouseY <= 550
-    ) {
-
-    addCommand(Command.MOVE);
-
-    return;
-  }
-
-  // LEFT
-  if (
-    mouseX >= panelX + 145 &&
-    mouseX <= panelX + 250 &&
-    mouseY >= 505 &&
-    mouseY <= 550
-    ) {
-
-    addCommand(Command.LEFT);
-
-    return;
-  }
-
-  // RIGHT
-  if (
-    mouseX >= panelX + 265 &&
-    mouseX <= panelX + 365 &&
-    mouseY >= 505 &&
-    mouseY <= 550
-    ) {
-
-    addCommand(Command.RIGHT);
-
-    return;
-  }
-
-  // RUN
-  if (
-    mouseX >= panelX + 25 &&
-    mouseX <= panelX + 130 &&
-    mouseY >= 565 &&
-    mouseY <= 610
-    ) {
-
-    runProgram();
-
-    return;
-  }
-
-  // DELETE
-  if (
-    mouseX >= panelX + 145 &&
-    mouseX <= panelX + 250 &&
-    mouseY >= 565 &&
-    mouseY <= 610
-    ) {
-
-    deleteCommand();
-
-    return;
-  }
-
-  // CLEAR
-  if (
-    mouseX >= panelX + 265 &&
-    mouseX <= panelX + 365 &&
-    mouseY >= 565 &&
-    mouseY <= 610
-    ) {
-
-    program.clear();
-
-    message = "Program dibersihkan.";
-    messageColor = TEXT_COLOR;
-
-    return;
-  }
-}
 
 // ============================================================
 // KEYBOARD
@@ -1357,173 +1197,12 @@ void drawResult() {
     425
     );
 
-  drawButton(
-    width / 2 - 120,
-    470,
-    240,
-    70,
-    "PLAY AGAIN",
-    ACCENT
-    );
+  //drawButton(
+  //  width / 2 - 120,
+  //  470,
+  //  240,
+  //  70,
+  //  "PLAY AGAIN",
+  //  ACCENT
+  //  );
 }
-
-// ============================================================
-// PLAYER CLASS
-// ============================================================
-
-class Player {
-
-  int x;
-  int y;
-
-  int direction;
-
-  Player(
-    int startX,
-    int startY,
-    int startDirection
-    ) {
-
-    x = startX;
-    y = startY;
-
-    direction = startDirection;
-  }
-
-  void turnLeft() {
-
-    direction--;
-
-    if (direction < 0) {
-      direction = 3;
-    }
-  }
-
-  void turnRight() {
-
-    direction++;
-
-    if (direction > 3) {
-      direction = 0;
-    }
-  }
-
-  void draw() {
-
-    float cx =
-      gridX +
-      x * cellSize +
-      cellSize / 2;
-
-    float cy =
-      gridY +
-      y * cellSize +
-      cellSize / 2;
-
-    // Robot body
-    fill(ACCENT);
-    noStroke();
-
-    rect(
-      cx - 22,
-      cy - 22,
-      44,
-      44,
-      10
-      );
-
-    // Robot screen
-    fill(color(20, 30, 40));
-
-    rect(
-      cx - 14,
-      cy - 12,
-      28,
-      20,
-      5
-      );
-
-    // Eyes
-    fill(GREEN);
-
-    ellipse(
-      cx - 7,
-      cy - 2,
-      5,
-      5
-      );
-
-    ellipse(
-      cx + 7,
-      cy - 2,
-      5,
-      5
-      );
-
-    // Direction indicator
-    pushMatrix();
-
-    translate(cx, cy);
-
-    float angle =
-      direction * HALF_PI -
-      HALF_PI;
-
-    rotate(angle);
-
-    fill(YELLOW);
-
-    triangle(
-      0,
-      -32,
-      -7,
-      -20,
-      7,
-      -20
-      );
-
-    popMatrix();
-  }
-}
-
-// ============================================================
-// GOAL CLASS
-// ============================================================
-
-class Goal {
-
-  int x;
-  int y;
-
-  Goal(
-    int x,
-    int y
-    ) {
-
-    this.x = x;
-    this.y = y;
-  }
-}
-
-// ============================================================
-// WALL CLASS
-// ============================================================
-
-class Wall {
-
-  int x;
-  int y;
-
-  Wall(
-    int x,
-    int y
-    ) {
-
-    this.x = x;
-    this.y = y;
-  }
-}
-
-// ============================================================
-// COMMAND CLASS
-// ============================================================
